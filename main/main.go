@@ -15,4 +15,7 @@ func main() {
 	client.ReadGroups()
 
 	client.ReadUserInfo(props["adminEmail"])
+	client.ReadChannels()
+	client.SendMessageToChannel()
+	client.SendMessageToUser(props["adminEmail"])
 }

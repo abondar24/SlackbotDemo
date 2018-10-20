@@ -7,7 +7,9 @@ Demo shows some features of Slack bots.
 
 - Read groups
 - Read user info by email
-
+- Read channels
+- Send message to selected channel
+- Send message to selected user 
 
 ### Build and run
 
@@ -17,3 +19,4 @@ go build
 
 ./main
 ```
+Check token on bot admin page in Slack
