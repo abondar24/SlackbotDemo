@@ -14,7 +14,7 @@ Demo shows some features of Slack bots.
 - Billable info(not working as current lib version doesn't support workspa ce tokens)
 - Send reactions
 - Handle slash commands(requried a tunneling server e.g [ngrock](https://ngrok.com/])
-
+After ngrock is restarted don't forget to change slash command url
 ### Build and run
 
 ```yaml
