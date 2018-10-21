@@ -1,9 +1,11 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/nlopes/slack"
 	"log"
+	"net/http"
 )
 
 type SlackClient struct {
@@ -159,5 +161,103 @@ func (client *SlackClient) Stars() {
 		fmt.Println("Starred ", s.Type, ":", desc)
 
 	}
+}
 
+func (client *SlackClient) React(token string) {
+	api := slack.New(token)
+
+	authTest, err := api.AuthTest()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	postUsername := authTest.User
+	postUserID := authTest.UserID
+
+	_, _, chanID, err := api.OpenIMChannel(postUserID)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	postChanID := chanID
+
+	fmt.Printf("Posting as %s (%s) in DM , channel %s\n", postUsername, postUserID, postChanID)
+
+	chanID, timestamp, err := api.PostMessage(postChanID, slack.MsgOptionText("All good?", false))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	msgRef := slack.NewRefToMessage(chanID, timestamp)
+
+	err = api.AddReaction("+1", msgRef)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = api.AddReaction("cry", msgRef)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	msgReacts, err := api.GetReactions(msgRef, slack.NewGetReactionsParameters())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, r := range msgReacts {
+		fmt.Printf(" %d users say %s\n", r.Count, r.Name)
+	}
+
+	listReacts, _, err := client.api.ListReactions(slack.NewListReactionsParameters())
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(len(listReacts))
+	for _, item := range listReacts {
+		fmt.Printf("%d on a %s...\n", len(item.Reactions), item.Type)
+		for _, r := range item.Reactions {
+			fmt.Printf("  %s (along with %d others)\n", r.Name, r.Count-1)
+		}
+	}
+
+}
+
+//uses deprecated verification token
+func (client *SlackClient) HandleSlashCommand(verToken string) {
+
+	//endpoint
+	http.HandleFunc("/slashTest", func(w http.ResponseWriter, r *http.Request) {
+		s, err := slack.SlashCommandParse(r)
+
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if !s.ValidateToken(verToken) {
+			log.Println(err)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		switch s.Command {
+		case "/slashtest":
+			params := &slack.Msg{Text: s.Text}
+			b, err := json.Marshal(params)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(b)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	http.ListenAndServe(":3000", nil)
 }
