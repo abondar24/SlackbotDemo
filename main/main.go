@@ -11,11 +11,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	client := util.InitClient(props["token"])
+	client := util.InitClient(props["botUserToken"])
 	client.ReadGroups()
-
 	client.ReadUserInfo(props["adminEmail"])
 	client.ReadChannels()
 	client.SendMessageToChannel()
 	client.SendMessageToUser(props["adminEmail"])
+
+	//client.CheckBilling(props["adminEmail"])
+	//client.Stars(props["botAccessToken"])
 }

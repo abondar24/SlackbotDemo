@@ -112,3 +112,52 @@ func (client *SlackClient) SendMessageToUser(userEmail string) {
 
 	fmt.Printf("Message successfully sent to user %s at %s\n", user.ID, timestamp)
 }
+
+func (client *SlackClient) CheckBilling(userEmail string) {
+	user := readUserInfo(client.api, userEmail)
+
+	workspaceClient := slack.New("workspace token")
+	billingActive, err := workspaceClient.GetBillableInfo(user.ID)
+	if err != nil {
+		log.Println("ss1")
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("User ID: %s, BillingActive: %v\n\n\n", user.ID, billingActive[user.ID])
+
+	billingActive, err = workspaceClient.GetBillableInfoForTeam()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for id, value := range billingActive {
+		fmt.Printf("User ID: %s, BillingActive: %v\n\n\n", id, value)
+	}
+}
+
+func (client *SlackClient) Stars() {
+	params := slack.NewStarsParameters()
+	accessClient := slack.New("workspace token")
+	starredItems, _, err := accessClient.GetStarred(params)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, s := range starredItems {
+		var desc string
+		switch s.Type {
+		case slack.TYPE_MESSAGE:
+			desc = s.Message.Text
+		case slack.TYPE_FILE:
+			desc = s.File.Name
+		case slack.TYPE_FILE_COMMENT:
+			desc = s.File.Name + " - " + s.Comment.Comment
+		case slack.TYPE_CHANNEL, slack.TYPE_IM, slack.TYPE_GROUP:
+			desc = s.Channel
+		}
+
+		fmt.Println("Starred ", s.Type, ":", desc)
+
+	}
+
+}

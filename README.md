@@ -10,6 +10,9 @@ Demo shows some features of Slack bots.
 - Read channels
 - Send message to selected channel
 - Send message to selected user 
+- Stared items(not working as current lib version doesn't support workspa ce tokens)
+- Billable info(not working as current lib version doesn't support workspa ce tokens)
+
 
 ### Build and run
 
